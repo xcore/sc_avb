@@ -357,7 +357,11 @@ static void store_rcvd_cmd_resp(avb_1722_1_acmp_cmd_resp* store, avb_1722_1_acmp
  */
 unsigned acmp_listener_valid_listener_unique(void)
 {
+#if AVB_NUM_SINKS > 0
     return acmp_listener_rcvd_cmd_resp.listener_unique_id < AVB_1722_1_MAX_LISTENERS;
+#else
+    return 0;
+#endif
 }
 
 /**
