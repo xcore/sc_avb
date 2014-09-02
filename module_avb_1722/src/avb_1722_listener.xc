@@ -213,7 +213,7 @@ void avb_1722_listener(chanend c_mac_rx,
 
 #if AVB_1722_FORMAT_61883_4
   ptp_request_time_info_mod64(c_ptp);
-  ptp_get_requested_time_info_mod64(c_ptp, timeinfo);
+  ptp_get_requested_time_info_mod64(c_ptp, timeInfo);
   tmr	:> t;
   t+=TIMEINFO_UPDATE_INTERVAL;
 #endif
