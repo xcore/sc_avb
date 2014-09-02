@@ -430,7 +430,9 @@ void media_clock_server(server interface media_clock_if media_clock_ctl,
 #endif
 
       case media_clock_ctl.set_buf_fifo(unsigned i, int fifo):
+#if (AVB_NUM_MEDIA_OUTPUTS != 0)
         buf_info[i].fifo = fifo;
+#endif
         fifo_init_count--;
         break;
       case media_clock_ctl.register_clock(unsigned i, unsigned clock_num):

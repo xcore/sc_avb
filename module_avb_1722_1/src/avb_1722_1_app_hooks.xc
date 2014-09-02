@@ -22,6 +22,7 @@ void avb_entity_on_new_entity_available_default(client interface avb_interface a
 /* The controller has indicated that a listener is connecting to this talker stream */
 void avb_talker_on_listener_connect_default(client interface avb_interface avb, int source_num, const_guid_ref_t listener_guid)
 {
+#if AVB_NUM_SOURCES > 0
   unsigned stream_id[2];
   enum avb_source_state_t state;
   avb.get_source_state(source_num, state);
@@ -45,6 +46,9 @@ void avb_talker_on_listener_connect_default(client interface avb_interface avb, 
 
     avb.set_source_state(source_num, AVB_SOURCE_STATE_POTENTIAL);
   }
+#else
+  __builtin_unreachable();
+#endif
 }
 
 /* The controller has indicated that a listener has returned an error on connection attempt */
@@ -62,6 +66,7 @@ avb_1722_1_acmp_status_t avb_listener_on_talker_connect_default(client interface
                                                                 unsigned short vlan_id,
                                                                 const_guid_ref_t my_guid)
 {
+#if AVB_NUM_SINKS > 0
   const int channels_per_stream = AVB_NUM_MEDIA_OUTPUTS/AVB_NUM_SINKS;
   int map[AVB_NUM_MEDIA_OUTPUTS/AVB_NUM_SINKS];
   for (int i = 0; i < channels_per_stream; i++) map[i] = sink_num ? sink_num*channels_per_stream+i  : sink_num+i;
@@ -86,6 +91,10 @@ avb_1722_1_acmp_status_t avb_listener_on_talker_connect_default(client interface
 
   avb.set_sink_state(sink_num, AVB_SINK_STATE_POTENTIAL);
   return ACMP_STATUS_SUCCESS;
+#else
+  __builtin_unreachable();
+  return ACMP_STATUS_LISTENER_UNKNOWN_ID;
+#endif
 }
 
 /* The controller has indicated to disconnect this listener sink from a talker stream */
