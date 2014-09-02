@@ -142,7 +142,7 @@ static void register_media(chanend media_ctl[])
 }
 
 static void init_media_clock_server(client interface media_clock_if
-                                    media_clock_ctl)
+                                    ?media_clock_ctl)
 {
   if (!isnull(media_clock_ctl)) {
     for (int i=0;i<AVB_NUM_MEDIA_OUTPUTS;i++) {
