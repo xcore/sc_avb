@@ -150,25 +150,29 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
 
 #if AEM_GENERATE_DESCRIPTORS_ON_FLY
   switch (read_type) {
+  #if AVB_1722_FORMAT_61883_6
     case AEM_AUDIO_CLUSTER_TYPE:
       if (read_id < (AVB_NUM_MEDIA_OUTPUTS+AVB_NUM_MEDIA_INPUTS)) {
         descriptor = &desc_audio_cluster_template[0];
         desc_size_bytes = sizeof(aem_desc_audio_cluster_t);
       }
       break;
-#if (AVB_NUM_SOURCES > 0)
+  #endif
+#if (AVB_NUM_SINKS > 0)
     case AEM_STREAM_INPUT_TYPE:
       if (read_id < AVB_NUM_SINKS) {
         descriptor = &desc_stream_input_0[0];
         desc_size_bytes = sizeof(desc_stream_input_0);
       }
       break;
+  #if AVB_1722_FORMAT_61883_6
     case AEM_STREAM_PORT_INPUT_TYPE:
       if (read_id < AVB_NUM_SINKS) {
         descriptor = &desc_stream_port_input_0[0];
         desc_size_bytes = sizeof(aem_desc_stream_port_input_output_t);
       }
       break;
+  #endif
 #endif
 #if (AVB_NUM_SOURCES > 0)
     case AEM_STREAM_OUTPUT_TYPE:
@@ -177,12 +181,14 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
         desc_size_bytes = sizeof(desc_stream_output_0);
       }
       break;
+  #if AVB_1722_FORMAT_61883_6
     case AEM_STREAM_PORT_OUTPUT_TYPE:
       if (read_id < AVB_NUM_SOURCES) {
         descriptor = &desc_stream_port_output_0[0];
         desc_size_bytes = sizeof(aem_desc_stream_port_input_output_t);
       }
       break;
+  #endif
 #endif
   }
 
@@ -229,6 +235,7 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
 
     found_descriptor = 1;
   }
+#if AVB_1722_FORMAT_61883_6
   else if (read_type == AEM_AUDIO_MAP_TYPE)
   {
     if (read_id < (AVB_NUM_SINKS+AVB_NUM_SOURCES))
@@ -269,6 +276,7 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
       found_descriptor = 2; // 2 signifies do not copy descriptor below
     }
   }
+#endif
   else
 #endif
   {
