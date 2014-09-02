@@ -329,7 +329,7 @@ void media_clock_server(server interface media_clock_if media_clock_ctl,
 #if (AVB_NUM_MEDIA_OUTPUTS != 0)
   unsigned char buf_ctl_cmd;
 #endif
-  timer clk_timers[AVB_NUM_MEDIA_CLOCKS];
+  timer clk_timers[AVB_NUM_MEDIA_CLOCKS ? AVB_NUM_MEDIA_CLOCKS : 1]; // Workaround compiler bug #15792 when AVB_NUM_MEDIA_CLOCKS==0
   unsigned fifo_init_count = AVB_NUM_MEDIA_OUTPUTS;
 
 
