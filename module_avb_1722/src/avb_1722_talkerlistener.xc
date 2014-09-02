@@ -56,6 +56,7 @@ void avb_1722_talkerlistener(chanend c_ptp,
                              int num_listener_streams,
                              int num_talker_streams)
 {
+#if !AVB_1722_FORMAT_61883_4
   avb_1722_talker_state_t talker_state;
   avb_1722_listener_state_t listener_state;
   ptp_time_info_mod64 timeInfo;
@@ -119,6 +120,7 @@ void avb_1722_talkerlistener(chanend c_ptp,
           break;
         }
     }
+#endif
 }
 
 

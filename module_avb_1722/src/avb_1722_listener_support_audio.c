@@ -14,7 +14,7 @@
 #include "avb_conf.h"
 #include "debug_print.h"
 
-#if defined(AVB_1722_FORMAT_SAF) || defined(AVB_1722_FORMAT_61883_6)
+#if (AVB_1722_FORMAT_SAF || AVB_1722_FORMAT_61883_6)
 
 #if AVB_1722_RECORD_ERRORS
 static unsigned char prev_seq_num = 0;

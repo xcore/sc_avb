@@ -266,11 +266,10 @@ static void update_sink_state(unsigned sink_num,
 
 static unsigned avb_srp_calculate_max_framesize(avb_source_info_t *source_info)
 {
-#if defined(AVB_1722_FORMAT_61883_6) || defined(AVB_1722_FORMAT_SAF)
+#if AVB_1722_FORMAT_61883_6 || AVB_1722_FORMAT_SAF
   const unsigned samples_per_packet = (AVB_MAX_AUDIO_SAMPLE_RATE + (AVB1722_PACKET_RATE-1))/AVB1722_PACKET_RATE;
   return AVB1722_PLUS_SIP_HEADER_SIZE + (source_info->stream.num_channels * samples_per_packet * 4);
-#endif
-#if defined(AVB_1722_FORMAT_61883_4)
+#elif AVB_1722_FORMAT_61883_4
   return AVB1722_PLUS_SIP_HEADER_SIZE + (192 * MAX_TS_PACKETS_PER_1722);
 #endif
 }

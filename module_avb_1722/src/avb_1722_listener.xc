@@ -203,8 +203,7 @@ void avb_1722_listener(chanend c_mac_rx,
   avb_1722_listener_state_t st;
   timer tmr;
 
-#if defined(AVB_1722_FORMAT_61883_4)
-  // Conditional due to compiler bug 11998.
+#if AVB_1722_FORMAT_61883_4
   unsigned t;
   int pending_timeinfo = 0;
   ptp_time_info_mod64 timeInfo;
@@ -212,8 +211,7 @@ void avb_1722_listener(chanend c_mac_rx,
   set_thread_fast_mode_on();
   avb_1722_listener_init(c_mac_rx, c_listener_ctl, st, num_streams);
 
-#if defined(AVB_1722_FORMAT_61883_4)
-  // Conditional due to compiler bug 11998.
+#if AVB_1722_FORMAT_61883_4
   ptp_request_time_info_mod64(c_ptp);
   ptp_get_requested_time_info_mod64(c_ptp, timeinfo);
   tmr	:> t;
@@ -226,15 +224,13 @@ void avb_1722_listener(chanend c_mac_rx,
 #pragma ordered
     select
       {
-#if !defined(AVB_1722_FORMAT_61883_4)
-        // Conditional due to compiler bug 11998.
-        // FIXME: stream_num variable is not the stream num, it is the FIFO!
+#if !AVB_1722_FORMAT_61883_4
       case !isnull(c_buf_ctl) => c_buf_ctl :> int stream_num:
           media_output_fifo_handle_buf_ctl(c_buf_ctl, stream_num, st.notified_buf_ctl, tmr);
         break;
 #endif
 
-#if defined(AVB_1722_FORMAT_61883_4)
+#if AVB_1722_FORMAT_61883_4
         // The PTP server has sent new time information
       case !isnull(c_ptp) => ptp_get_requested_time_info_mod64(c_ptp, timeInfo):
         pending_timeinfo = 0;
@@ -253,8 +249,7 @@ void avb_1722_listener(chanend c_mac_rx,
         break;
 
 
-#if defined(AVB_1722_FORMAT_61883_4)
-        // Conditional due to compiler bug 11998
+#if AVB_1722_FORMAT_61883_4
         // Periodically ask the PTP server for new time information
       case !isnull(c_ptp) => tmr when timerafter(t) :> t:
         if (!pending_timeinfo) {
