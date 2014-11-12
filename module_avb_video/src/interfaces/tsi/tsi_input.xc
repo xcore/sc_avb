@@ -20,12 +20,6 @@
 #pragma xta command "analyze endpoints ts_spi_input_loop ts_spi_input_first"
 #pragma xta command "set required - 148 ns"
 
-// 0001 = 1 = correct (drop 4)
-// 0010 = 2 = drop 3
-// 0100 = 4 = drop 2
-// 1000 = 8 = drop 1
-static const char align_byte[16] = { 32, 32, 24, 32, 16, 32, 32, 32, 8, 32, 32, 32, 32, 32, 32, 32 };
-
 static unsigned overflow=0;
 static unsigned stream_start=0;
 
@@ -51,14 +45,14 @@ void tsi_input(clock clk, in buffered port:32 p_data, in port p_clk, in buffered
 
 		// Read sync word until it is non-zero then use bit position to find shift multiplier
 		{
-			unsigned v;
-			stream_start++;
-			p_sync when pinsneq(0) :> sync;
-			partin(p_data, align_byte[v & 0xF]);
+	        p_sync when pinsneq(0) :> sync;
+	        clearbuf(p_data);
 
-			for (unsigned n=0; n<46; n++) {
-				p_data :> unsigned;
-			}
+	        partin(p_data, 24);
+
+	        for (unsigned n=0; n<46; n++) {
+	            p_data :> unsigned;
+	        }
 		}
 
 		while (1) {
