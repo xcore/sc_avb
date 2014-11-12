@@ -20,9 +20,6 @@
 #pragma xta command "analyze endpoints ts_spi_input_loop ts_spi_input_first"
 #pragma xta command "set required - 148 ns"
 
-static unsigned overflow=0;
-static unsigned stream_start=0;
-
 #pragma unsafe arrays
 void tsi_input(clock clk, in buffered port:32 p_data, in port p_clk, in buffered port:4 p_sync, in port p_valid, ififo_t& ififo)
 {
