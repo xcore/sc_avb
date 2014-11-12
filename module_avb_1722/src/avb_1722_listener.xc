@@ -120,7 +120,7 @@ void avb_1722_listener_init(chanend c_mac_rx,
 
 #pragma select handler
 void avb_1722_listener_handle_packet(chanend c_mac_rx,
-                                     chanend c_buf_ctl,
+                                     chanend ?c_buf_ctl,
                                      avb_1722_listener_state_t &st,
                                      ptp_time_info_mod64 &?timeInfo)
 {
