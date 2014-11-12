@@ -90,7 +90,6 @@ void tsi_input(clock clk, in buffered port:32 p_data, in port p_clk, in buffered
 
 
 			// loop for main block of words
-#pragma loop unroll
 			for (unsigned n=0; n<46; n++) {
 #pragma xta endpoint "ts_spi_input_loop"
 				p_data :> value;
