@@ -233,13 +233,7 @@ static void update_sink_state(unsigned sink_num,
                                   router_link,
                                   sink->stream.local_id);
 
-      for (int i=0; i < MRP_NUM_PORTS; i++) {
-        if (sink->reservation.vlan_id) {
-          avb_join_vlan(sink->reservation.vlan_id, i);
-        }
-      }
-
-        i_srp.register_attach_request(sink->reservation.stream_id);
+      sink->reservation.vlan_id = i_srp.register_attach_request(sink->reservation.stream_id, sink->reservation.vlan_id);
 
     }
     else if (prev != AVB_SINK_STATE_DISABLED &&
@@ -267,7 +261,7 @@ static void update_sink_state(unsigned sink_num,
 static unsigned avb_srp_calculate_max_framesize(avb_source_info_t *source_info)
 {
 #if AVB_1722_FORMAT_61883_6 || AVB_1722_FORMAT_SAF
-  const unsigned samples_per_packet = (AVB_MAX_AUDIO_SAMPLE_RATE + (AVB1722_PACKET_RATE-1))/AVB1722_PACKET_RATE;
+  const unsigned samples_per_packet = (source_info->stream.rate + (AVB1722_PACKET_RATE-1))/AVB1722_PACKET_RATE;
   return AVB1722_PLUS_SIP_HEADER_SIZE + (source_info->stream.num_channels * samples_per_packet * 4);
 #elif AVB_1722_FORMAT_61883_4
   return AVB1722_PLUS_SIP_HEADER_SIZE + (192 * MAX_TS_PACKETS_PER_1722);
@@ -341,18 +335,13 @@ static void update_source_state(unsigned source_num,
             *c <: AVB_DEFAULT_PRESENTATION_TIME_DELAY_NS;
         }
 
-        if (source->reservation.vlan_id) {
-          master {
-            *c <: AVB1722_SET_VLAN;
-            *c <: (int)source->reservation.vlan_id;
-          }
-          for (int i=0; i < MRP_NUM_PORTS; i++) {
-            avb_join_vlan(source->reservation.vlan_id, i);
-          }
-        }
-
         source->reservation.tspec_max_frame_size = avb_srp_calculate_max_framesize(source);
-        i_srp.register_stream_request(source->reservation);
+        source->reservation.vlan_id = i_srp.register_stream_request(source->reservation);
+
+        master {
+          *c <: AVB1722_SET_VLAN;
+          *c <: (int)source->reservation.vlan_id;
+        }
 
         if (!isnull(i_media_clock_ctl)) {
           i_media_clock_ctl.register_clock(clk_ctl, source->stream.sync);
@@ -386,21 +375,11 @@ static void update_source_state(unsigned source_num,
              state == AVB_SOURCE_STATE_ENABLED) {
       // start transmitting
 
-      if (source->reservation.vlan_id > 0) {
-        debug_printf("%s #%d on\n", stream_string, source_num);
+      debug_printf("%s #%d on\n", stream_string, source_num);
 
-        master {
-          *c <: AVB1722_SET_VLAN;
-          *c <: (int)source->reservation.vlan_id;
-        }
-
-        master {
-          *c <: AVB1722_TALKER_GO;
-          *c <: (int)source->stream.local_id;
-        }
-      }
-      else {
-        debug_printf("Did not start Talker stream #%d: invalid VID\n", source_num);
+      master {
+        *c <: AVB1722_TALKER_GO;
+        *c <: (int)source->stream.local_id;
       }
     }
     else if (prev != AVB_SOURCE_STATE_DISABLED &&

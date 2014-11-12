@@ -224,12 +224,12 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
 
     if (read_type == AEM_STREAM_PORT_OUTPUT_TYPE) {
       aem_desc_stream_port_input_output_t *stream_port = (aem_desc_stream_port_input_output_t *)descriptor;
-      hton_16(stream_port->base_cluster, AVB_NUM_MEDIA_OUTPUTS + (read_id * AVB_NUM_SOURCES));
+      hton_16(stream_port->base_cluster, AVB_NUM_MEDIA_OUTPUTS + (read_id * AVB_NUM_MEDIA_INPUTS/AVB_NUM_SOURCES));
       hton_16(stream_port->base_map, AVB_NUM_SOURCES + read_id);
     }
     else if (read_type == AEM_STREAM_PORT_INPUT_TYPE) {
       aem_desc_stream_port_input_output_t *stream_port = (aem_desc_stream_port_input_output_t *)descriptor;
-      hton_16(stream_port->base_cluster, read_id * AVB_NUM_SINKS);
+      hton_16(stream_port->base_cluster, read_id * AVB_NUM_MEDIA_OUTPUTS/AVB_NUM_SINKS);
       hton_16(stream_port->base_map, read_id);
     }
 
@@ -676,6 +676,12 @@ static void process_avb_1722_1_aecp_aem_msg(avb_1722_1_aecp_packet_t *pkt,
       case AECP_AEM_CMD_SET_CONTROL:
       {
         cd_len = process_aem_cmd_getset_control(pkt, &status, command_type, i_1722_1_entity) + sizeof(avb_1722_1_aem_getset_control_t) + AVB_1722_1_AECP_COMMAND_DATA_OFFSET;
+        break;
+      }
+      case AECP_AEM_CMD_GET_COUNTERS:
+      {
+        process_aem_cmd_get_counters(pkt, &status, i_avb_api);
+        cd_len = sizeof(avb_1722_1_aem_get_counters_t);
         break;
       }
 #if AVB_1722_1_FIRMWARE_UPGRADE_ENABLED

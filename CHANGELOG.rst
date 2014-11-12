@@ -1,6 +1,34 @@
 sc_avb Change Log
 =================
 
+6.3.1
+-----
+  * Bug fix for excessive Talker AVTP presentation time being absorbed in the FIFOs for a short period at start
+  * Fixes regression in bad gPTP pdelay follow up detection
+  * Bug fix for reported base audio clusters in AEM stream descriptors
+
+6.3.0
+-----
+  * MEDIA_CLOCK_SOURCE bit now set in 1722.1 ADP Talker Capabilities
+  * 1722.1 GET_COUNTERS command added for CLOCK_DOMAIN descriptor
+  * Minor bug fix in gPTP where multiple pdelay responses were not triggering AVnu specific behaviour
+  * Change to SRP interface to allow SRP to control the joining of VLANs via MVRP
+  * Max frame size reported by SRP changed to reflect the current set sample rate instead of the max supported
+
+  * Changes to dependencies:
+
+    - sc_ethernet: 2.3.2rc0 -> 2.3.3beta0
+
+      + Change to rounding of Qav slope calculation
+
+6.2.2
+-----
+  * PTP clock accuracy is now reported to be within 25 ns by BMCA
+  * PTP offset scaled log variance is now set to the correct unkown value (0x436A) per IEEE P802.1AS-Cor-1
+  * Grandmaster timeBaseIndicator and lastGmFreqChange parameters are now set in the PTP sync follow up TLV
+  * Pdelay exchanges are marked invalid and asCapable reset if the delay is measured as negative
+  * Fixed issue with lost PTP messages being counted twice, causing a premature asCapable reset
+
 6.2.1
 -----
   * Fix potential parallel usage violation on PTP client function

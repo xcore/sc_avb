@@ -45,9 +45,8 @@ static unsigned short steps_removed_from_gm;
 /* These variables make up the state of the local clock/port */
 unsigned ptp_reference_local_ts;
 ptp_timestamp ptp_reference_ptp_ts;
-static long long ptp_gmoffset = 0;
-static int expect_gm_discontinuity = 1;
-static int ptp_candidate_gmoffset_valid = 0;
+static int ptp_last_gm_freq_change = 0;
+static int ptp_gm_timebase_ind = 0;
 static n64_t my_port_id;
 static n80_t master_port_id;
 static u8_t ptp_priority1;
@@ -247,16 +246,11 @@ static void set_new_role(enum ptp_port_role_t new_role,
 
     debug_printf("PTP Port %d Role: Slave\n", port_num);
 
-    // Reset synotization variables
     ptp_port_info[port_num].delay_info.valid = 0;
     g_ptp_adjust = 0;
     g_inv_ptp_adjust = 0;
     prev_adjust_valid = 0;
     g_ptp_adjust_valid = 0;
-    // Since there has been a role change there may be a gm discontinuity
-    // to detect
-    expect_gm_discontinuity = 1;
-    ptp_candidate_gmoffset_valid = 0;
     last_pdelay_req_time[port_num] = t;
     sync_lock = 0;
     sync_count = 0;
@@ -266,14 +260,17 @@ static void set_new_role(enum ptp_port_role_t new_role,
 
     debug_printf("PTP Port %d Role: Master\n", port_num);
 
-    // Now we are the master so no rate matching is needed
+    // Now we are the master so no rate matching is needed, but record the last rate for the
+    // follow up TLV
+    // Our internal precision is 2^30, we need to scale to (2^41 * 1/g_ptp_adjust) per the standard
+    ptp_last_gm_freq_change = g_inv_ptp_adjust << 11;
+    ptp_gm_timebase_ind++;
     g_ptp_adjust = 0;
     g_inv_ptp_adjust = 0;
 
     ptp_reference_local_ts =
       ptp_reference_local_ts;
 
-    ptp_gmoffset = 0;
     last_sync_time[port_num] = last_announce_time[port_num] = t;
   }
 
@@ -466,12 +463,12 @@ static void update_path_delay(ptp_timestamp &master_ingress_ts,
 
   round_trip = (local_diff - master_diff);
 
-  round_trip -= LOCAL_EGRESS_DELAY;
-
   delay = round_trip / 2;
 
-  if (delay < 0)
-    delay = 0;
+  if (delay < 0) {
+    port_info.delay_info.valid = 0;
+    return;
+  }
 
   if (port_info.delay_info.valid) {
 
@@ -929,6 +926,9 @@ static void send_ptp_sync_msg(chanend c_tx, int port_num)
   pFollowUpMesg->organizationSubType[1] = 0;
   pFollowUpMesg->organizationSubType[2] = 1;
 
+  pFollowUpMesg->scaledLastGmFreqChange = hton32(ptp_last_gm_freq_change);
+  pFollowUpMesg->gmTimeBaseIndicator = hton16(ptp_gm_timebase_ind);
+
   ptp_tx(c_tx, buf0, FOLLOWUP_PACKET_SIZE, port_num);
 
 #if DEBUG_PRINT
@@ -1150,25 +1150,29 @@ static int qualify_announce(ComMessageHdr &alias header, AnnounceMessage &alias 
 }
 
 static void set_ascapable(int eth_port) {
-  ptp_port_info[eth_port].asCapable = 1;
-  set_new_role(PTP_MASTER, eth_port);
+  if (!ptp_port_info[eth_port].asCapable) {
+    ptp_port_info[eth_port].asCapable = 1;
+    set_new_role(PTP_MASTER, eth_port);
 #if DEBUG_PRINT_AS_CAPABLE
-  debug_printf("asCapable = 1\n");
+    debug_printf("asCapable = 1\n");
 #endif
+  }
 }
 
 static void reset_ascapable(int eth_port) {
-  ptp_port_info[eth_port].asCapable = 0;
-  set_new_role(PTP_DISABLED, eth_port);
-
+  if (ptp_port_info[eth_port].asCapable) {
+    ptp_port_info[eth_port].asCapable = 0;
+    ptp_port_info[eth_port].delay_info.exchanges = 0;
+    ptp_port_info[eth_port].delay_info.pdelay = 0;
+    ptp_port_info[eth_port].delay_info.valid = 0;
+    set_new_role(PTP_DISABLED, eth_port);
 #if DEBUG_PRINT_AS_CAPABLE
-  debug_printf("asCapable = 0\n");
+    debug_printf("asCapable = 0\n");
 #endif
+  }
 }
 
 static void pdelay_req_reset(int src_port) {
-  received_pdelay[src_port] = 0;
-
   if (ptp_port_info[src_port].delay_info.lost_responses < PTP_ALLOWED_LOST_RESPONSES) {
     ptp_port_info[src_port].delay_info.lost_responses++;
 #if DEBUG_PRINT_AS_CAPABLE
@@ -1293,31 +1297,38 @@ void ptp_recv(chanend c_tx,
         break;
       }
 
+      if (received_pdelay[src_port] &&
+          pdelay_req_seq_id[src_port] == ntoh16(msg->sequenceId)) {
+        // Count a lost follow up message
+        received_pdelay[src_port] = 0;
+        pdelay_req_reset(src_port);
+      }
+
       if (pdelay_request_sent[src_port] &&
           pdelay_req_seq_id[src_port] == ntoh16(msg->sequenceId) &&
           port_identity_equal(resp_msg->requestingPortIdentity, my_port_id) &&
           src_port+1 == ntoh16(resp_msg->requestingPortId)
           ) {
-          received_pdelay[src_port] = 1;
-          received_pdelay_id[src_port] = ntoh16(msg->sequenceId);
-          pdelay_resp_ingress_ts[src_port] = local_ingress_ts;
-          network_to_ptp_timestamp(pdelay_request_receipt_ts[src_port],
-                                   resp_msg->requestReceiptTimestamp);
+        received_pdelay[src_port] = 1;
+        received_pdelay_id[src_port] = ntoh16(msg->sequenceId);
+        pdelay_resp_ingress_ts[src_port] = local_ingress_ts;
+        network_to_ptp_timestamp(pdelay_request_receipt_ts[src_port],
+                                 resp_msg->requestReceiptTimestamp);
 #if DEBUG_PRINT
-          debug_printf("RX Pdelay resp, Port %d\n", src_port);
+        debug_printf("RX Pdelay resp, Port %d\n", src_port);
 #endif
-          ptp_port_info[src_port].delay_info.rcvd_source_identity = msg->sourcePortIdentity;
-        }
-        else {
-          pdelay_req_reset(src_port);
-        }
-        pdelay_request_sent[src_port] = 0;
+        ptp_port_info[src_port].delay_info.rcvd_source_identity = msg->sourcePortIdentity;
+      }
+      else {
+        pdelay_req_reset(src_port);
+      }
+      pdelay_request_sent[src_port] = 0;
 
       break;
     case PTP_PDELAY_RESP_FOLLOW_UP_MESG:
-      if (received_pdelay[src_port] &&
-          received_pdelay_id[src_port] == ntoh16(msg->sequenceId) &&
-          source_port_identity_equal(msg->sourcePortIdentity, ptp_port_info[src_port].delay_info.rcvd_source_identity)) {
+      if (received_pdelay[src_port]) {
+        if (received_pdelay_id[src_port] == ntoh16(msg->sequenceId) &&
+            source_port_identity_equal(msg->sourcePortIdentity, ptp_port_info[src_port].delay_info.rcvd_source_identity)) {
           ptp_timestamp pdelay_resp_egress_ts;
           PdelayRespFollowUpMessage *follow_up_msg =
             (PdelayRespFollowUpMessage *) (msg + 1);
@@ -1333,12 +1344,14 @@ void ptp_recv(chanend c_tx,
 
           ptp_port_info[src_port].delay_info.exchanges++;
 
+#if DEBUG_PRINT_AS_CAPABLE
+          debug_printf("Average pdelay of %d ns\n", ptp_port_info[src_port].delay_info.pdelay);
+#endif
+
           if (ptp_port_info[src_port].delay_info.valid &&
               ptp_port_info[src_port].delay_info.pdelay <= PTP_NEIGHBOR_PROP_DELAY_THRESH_NS &&
               ptp_port_info[src_port].delay_info.exchanges >= 2) {
-            if (!ptp_port_info[src_port].asCapable) {
               set_ascapable(src_port);
-            }
           }
           else {
             reset_ascapable(src_port);
@@ -1347,12 +1360,12 @@ void ptp_recv(chanend c_tx,
 #if DEBUG_PRINT
           debug_printf("RX Pdelay resp follow up, Port %d\n", src_port);
 #endif
-
         }
         else {
           pdelay_req_reset(src_port);
         }
-        received_pdelay[src_port] = 0;
+      }
+      received_pdelay[src_port] = 0;
       break;
     }
 }
@@ -1361,6 +1374,7 @@ void ptp_reset(int port_num) {
   set_new_role(PTP_MASTER, port_num);
   last_received_announce_time_valid[port_num] = 0;
   ptp_port_info[port_num].delay_info.multiple_resp_count = 0;
+  ptp_port_info[port_num].delay_info.pdelay = 0;
   periodic_counter[port_num] = 0;
   reset_ascapable(port_num);
 }
