@@ -119,6 +119,10 @@ void AVB1722_AVBTP_HeaderGen(unsigned char Buf[],
 		int sequence_number,
 		const unsigned stream_id0);
 
+#if defined(AVB_1722_FORMAT_61883_4) && defined(AVB_1722_FORMAT_61883_6)
+#error "61883-4 and 61883-6 not currently supported simultaneously"
+#endif
+
 // Max. packet size for AVB 1722 talker
 #ifdef AVB_1722_FORMAT_SAF
 #define MAX_PKT_BUF_SIZE_TALKER (AVB_ETHERNET_HDR_SIZE + AVB_TP_HDR_SIZE + TALKER_NUM_AUDIO_SAMPLES_PER_CHANNEL_PER_AVB1722_PKT * AVB_MAX_CHANNELS_PER_TALKER_STREAM * 4 + 4)
