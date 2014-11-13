@@ -222,17 +222,21 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
       generate_object_name((char *)cluster->object_name, (int)id_num);
     }
 
+#if (AVB_NUM_SOURCES > 0)
     if (read_type == AEM_STREAM_PORT_OUTPUT_TYPE) {
       aem_desc_stream_port_input_output_t *stream_port = (aem_desc_stream_port_input_output_t *)descriptor;
       hton_16(stream_port->base_cluster, AVB_NUM_MEDIA_OUTPUTS + (read_id * AVB_NUM_MEDIA_INPUTS/AVB_NUM_SOURCES));
       hton_16(stream_port->base_map, AVB_NUM_SOURCES + read_id);
     }
-    else if (read_type == AEM_STREAM_PORT_INPUT_TYPE) {
+    else
+#endif
+#if (AVB_NUM_SINKS > 0)
+    if (read_type == AEM_STREAM_PORT_INPUT_TYPE) {
       aem_desc_stream_port_input_output_t *stream_port = (aem_desc_stream_port_input_output_t *)descriptor;
       hton_16(stream_port->base_cluster, read_id * AVB_NUM_MEDIA_OUTPUTS/AVB_NUM_SINKS);
       hton_16(stream_port->base_map, read_id);
     }
-
+#endif
     found_descriptor = 1;
   }
 #if AVB_1722_FORMAT_61883_6
@@ -267,7 +271,11 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
 
       for (int i=0; i < num_mappings; i++)
       {
+#if (AVB_NUM_SINKS > 0)
         hton_16(audio_map->mappings[i].mapping_stream_index, read_id % AVB_NUM_SINKS);
+#else
+        hton_16(audio_map->mappings[i].mapping_stream_index, read_id);
+#endif
         hton_16(audio_map->mappings[i].mapping_stream_channel, i);
         hton_16(audio_map->mappings[i].mapping_cluster_offset, i);
         hton_16(audio_map->mappings[i].mapping_cluster_channel, 0); // Single channel audio clusters
