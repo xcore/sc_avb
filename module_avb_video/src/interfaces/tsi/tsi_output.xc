@@ -8,13 +8,13 @@
 
 #pragma xta command "remove exclusion *"
 #pragma xta command "analyze endpoints ts_spi_output_first ts_spi_output_loop"
-#pragma xta command "set required - 148 ns"
+#pragma xta command "set required - 296 ns"
 
 #pragma xta command "remove exclusion *"
 #pragma xta command "add exclusion ts_spi_output_loop"
 #pragma xta command "add exclusion ts_spi_output_no_data"
 #pragma xta command "analyze endpoints ts_spi_output_loop ts_spi_output_first"
-#pragma xta command "set required - 148 ns"
+#pragma xta command "set required - 296 ns"
 
 #pragma unsafe arrays
 void tsi_output(clock clk, out buffered port:32 p_data, in port p_clk, out
