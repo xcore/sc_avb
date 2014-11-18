@@ -1,6 +1,10 @@
 sc_avb Change Log
 =================
 
+6.4.0
+-----
+  * Adds support for MPEG-2 Transport Stream SPI interfaces and 61883-4 AVTP
+
 6.3.1
 -----
   * Bug fix for excessive Talker AVTP presentation time being absorbed in the FIFOs for a short period at start
