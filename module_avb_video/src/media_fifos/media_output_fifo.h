@@ -5,7 +5,7 @@
 #define streaming
 #endif
 #ifndef NULLABLE
-#define NULLABLE 
+#define NULLABLE
 #endif
 #else
 #define NULLABLE ?
@@ -71,7 +71,7 @@ void enable_media_output_fifo(media_output_fifo_t s,
  *  \param buf_ctl a channel end that links the FIFO to the media clock service
  *  \param notified_buf_ctl pointer to a flag which is set when the media clock has been notified of a timing event in the FIFO
  */
-void 
+void
 media_output_fifo_maintain(media_output_fifo_t s,
                            chanend buf_ctl,
                            REFERENCE_PARAM(int, notified_buf_ctl));
@@ -93,7 +93,7 @@ media_output_fifo_maintain(media_output_fifo_t s,
  *  \param index the index of the first 6 word block to write within the current packet
  *  \param n the number of 6 word blocks to push into the buffer
  */
-void 
+void
 media_output_fifo_push(media_output_fifo_t s0, unsigned int *sample_ptr, int index, int n);
 #endif
 
@@ -111,7 +111,7 @@ media_output_fifo_push(media_output_fifo_t s0, unsigned int *sample_ptr, int ind
  *  \param buf_ctl_notified pointer to the flag which indicates whether the clock recovery thread has been notified of a timing event
  */
 void
-media_output_fifo_handle_buf_ctl(chanend buf_ctl, 
+media_output_fifo_handle_buf_ctl(chanend buf_ctl,
                                  int stream_num,
                                  REFERENCE_PARAM(int, buf_ctl_notified));
 
@@ -119,9 +119,9 @@ media_output_fifo_handle_buf_ctl(chanend buf_ctl,
 /** Initialize media output FIFOs.
  *
  *  This function initializes media output FIFOs and ties the handles
- *  to their associated data structures. It should be called before the main 
+ *  to their associated data structures. It should be called before the main
  *  component function on a thread to setup the FIFOs.
- * 
+ *
  *  \param ofifos      an array of media output FIFO handles to initialize
  *  \param ofifo_data  an array of associated data structures
  *  \param n           the number of FIFOs to initialize

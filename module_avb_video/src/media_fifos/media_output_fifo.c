@@ -24,12 +24,12 @@ media_output_fifo_init(int s0, unsigned stream_num)
 }
 
 void
-disable_media_output_fifo(int s0) 
+disable_media_output_fifo(int s0)
 {
 }
 
 void
-enable_media_output_fifo(int s0, int media_clock) 
+enable_media_output_fifo(int s0, int media_clock)
 {
   ofifo_c_t *s = (ofifo_c_t *) s0;
   s->packet_wr = 0;
@@ -38,7 +38,7 @@ enable_media_output_fifo(int s0, int media_clock)
 
 
 // 1722 thread
-void 
+void
 media_output_fifo_push(media_output_fifo_t s0, unsigned int *sample_ptr, int index, int n)
 
 {

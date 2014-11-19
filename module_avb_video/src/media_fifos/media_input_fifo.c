@@ -68,7 +68,7 @@ media_input_fifo_get_packet(media_input_fifo_t media_input_fifo0)
 	return &s->fifo[s->packet_rd+1];
 }
 
-void 
+void
 media_input_fifo_release_packet(media_input_fifo_t media_input_fifo0)
 {
 	ififo_c_t *s =  (ififo_c_t *)media_input_fifo0;
