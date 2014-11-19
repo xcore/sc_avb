@@ -68,9 +68,9 @@
     </dependency>
     <dependency repo = "sc_ethernet">
         <gitbranch>master</gitbranch>
-        <githash>4927ea8fef066853834bea5439306184584b9550</githash>
+        <githash>f3c3dd14142d063f3f093f27cbf42bf01a92d008</githash>
         <uri>https://github.com/xcore/sc_ethernet.git</uri>
-        <version>2.3.3beta0</version>
+        <version>2.3.3rc0</version>
     </dependency>
     <dependency repo = "sc_util">
         <gitbranch>master</gitbranch>
@@ -129,7 +129,7 @@
     <release parenthash = "ae1289d15ba724452d607e1253af8fc932b67068" version = "6.2.1rc0" githash = "cafaeeb787b22f1790c0b4c2708fccbfc5c9d734"></release>
     <release parenthash = "0824794591287fbda821156d4ee3f36c86e29caf" version = "6.2.2beta0" githash = "d0bdd5626da78468e462e0e22dd5ae63ada4bd64"></release>
     <release parenthash = "07fae7eed1e62f1513cc477219c928ec34efc359" version = "6.3.0beta0" githash = "9996af655e240c942a411759d313127b29858cbd"></release>
-    <release parenthash = "5fc263eef9d6df2a51d13f55fff1929959797d3f" version = "6.3.1beta0"></release>
+    <release parenthash = "5fc263eef9d6df2a51d13f55fff1929959797d3f" version = "6.3.1beta0" githash = "ef63831fb5568b3c7dabfc592d87a95e777dfd6d"></release>
     <subpartnumber>XM-004459-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines></version_defines>
