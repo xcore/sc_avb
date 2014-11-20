@@ -35,7 +35,7 @@ void avb_talker_on_listener_connect_default(client interface avb_interface i_avb
  * \param i_avb             client interface of type ``avb_interface`` into avb_manager()
  * \param source_num        The local id of the Talker stream source
  * \param listener_guid     The GUID of the Listener entity that is disconnecting
- * \param connection_count  The number of connections a Talker thinks it has on it’s stream source,
+ * \param connection_count  The number of connections a Talker thinks it has on it's stream source,
                             i.e. the number of connect TX stream commands it has received less the number of
                             disconnect TX stream commands it has received. This number may not be accurate since an AVDECC Entity may
                             not have sent a disconnect command if the cable was disconnected or the AVDECC Entity abruptly powered down.

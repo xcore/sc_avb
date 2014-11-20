@@ -18,7 +18,7 @@ interface srp_interface {
    */
   short register_stream_request(avb_srp_info_t stream_info);
 
-  /** Used by a Talker application entity to request removal of the Talker’s advertisement declaration,
+  /** Used by a Talker application entity to request removal of the Talker's advertisement declaration,
    *  and thus remove the advertisement of a Stream, from the network.
    *
    *  \param stream_id two int array containing the Stream ID of the stream to deregister
