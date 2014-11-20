@@ -8,8 +8,8 @@
 
 #ifdef __XC__
 
-/** An AVB IEEE 1722 audio talker thread.
- *  This thread implements a talker, taking
+/** An AVB IEEE 1722 audio talker task.
+ *  This task implements a talker, taking
  *  media input FIFOs and combining them into 1722 packets to be
  *  sent to the ethernet component. It is dynamically configured
  *  using the AVB control API.
@@ -25,12 +25,12 @@ void avb_1722_talker(chanend c_ptp,
                      chanend c_talker_ctl,
                      int num_streams);
 
-/** An AVB IEEE 1722 audio listener thread.
+/** An AVB IEEE 1722 audio listener task.
  *
- *  This thread implements a listener. It takes IEEE 1722 packets from
+ *  This task implements a listener. It takes IEEE 1722 packets from
  *  the ethernet MAC and splits them into output FIFOs. The
  *  buffer fill level of these streams is set in conjunction with communication
- *  to the media clock server. This thread is dynamically configured
+ *  to the media clock server. This task is dynamically configured
  *  using the AVB control API.
  *
  *  \param c_mac_rx         receive link to the ethernet MAC

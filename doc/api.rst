@@ -86,9 +86,7 @@ Component tasks and functions
 -----------------------------
 
 The following functions provide components that can be combined in the
-top-level main. For details on the Ethernet component, see
-the `Ethernet Component Guide
-<http://github.xcore.com/sc_ethernet/index.html>`_.
+top-level main.
 
 Core Components
 ~~~~~~~~~~~~~~~

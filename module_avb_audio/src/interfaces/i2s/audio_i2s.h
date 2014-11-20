@@ -39,13 +39,13 @@ void i2s_master_configure_ports(REFERENCE_PARAM(i2s_ports_t, p),
 /** Input and output audio data using I2S format with the XCore acting
  as master.
 
- This function implements a thread that can handle several synchronous
+ This function implements a task that can handle several synchronous
  I2S interfaces. It inputs and outputs 24-bit data packed into 32 bits.
 
  The function will take input from the I2S interface and put the samples
  directly into shared memory media input FIFOs. The output samples are
  received over a channel. Every two word clock periods (i.e. once a
- sample) a timestamp is sent from this thread over the channel
+ sample) a timestamp is sent from this task over the channel
  and num_out samples are taken from the channel.
 
  The master clock is generated externally by the PLL. A clock block clocks

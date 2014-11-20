@@ -15,6 +15,7 @@ interface srp_interface {
    *  to initiate the advertisement of an available Stream
    *
    *  \param stream_info Struct of type avb_srp_info_t containing parameters of the stream to register
+   *  \returns The VLAN ID actually joined
    */
   short register_stream_request(avb_srp_info_t stream_info);
 
@@ -28,6 +29,8 @@ interface srp_interface {
   /** Used by a Listener application entity to issue a request to attach to the referenced Stream.
    *
    *  \param stream_id two int array containing the Stream ID of the stream to register
+   *  \param vlan_id the VLAN ID to join
+   *  \returns The VLAN ID actually joined
    */
   short register_attach_request(unsigned stream_id[2], short vlan_id);
 

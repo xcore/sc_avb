@@ -88,12 +88,12 @@ typedef struct ptp_port_info_t {
   ptp_path_delay_t delay_info;
 } ptp_port_info_t;
 
-/** This function runs the PTP server. It takes one thread and runs
+/** This function runs the PTP server. It requires one logical core and runs
     indefinitely
 
     \param mac_rx       chanend connected to the ethernet server (receive)
     \param mac_tx       chanend connected to the ethernet server (transmit)
-    \param client       an array of chanends to connect to clients
+    \param ptp_clients  an array of chanends to connect to clients
                         of the ptp server
     \param num_clients  The number of clients attached
     \param server_type The type of the server (``PTP_GRANDMASTER_CAPABLE``
@@ -283,7 +283,7 @@ void ptp_get_current_grandmaster(chanend ptp_server, unsigned char grandmaster[8
  *
  *  This function initializes the ptp server when you want to use it inline
  *  combined with other event handling functions (i.e. share the resource in
- *  the ptp thread).
+ *  the ptp task).
  *  It needs to be called in conjunction with do_ptp_server().
  *  Here is an example usage::
  *

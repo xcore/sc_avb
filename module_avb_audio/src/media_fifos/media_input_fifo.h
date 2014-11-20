@@ -55,7 +55,7 @@ media_input_fifo_push_sample(media_input_fifo_t media_input_fifo,
 /**
  * \brief Perform a blocking read of the next audio packet
  *
- * This is called by the talker thread when it needs the next audio
+ * This is called by the talker task when it needs the next audio
  * packet.  Later it will copy samples out of the packet, and ultimately
  * release the packet.
  *
@@ -70,7 +70,7 @@ media_input_fifo_get_packet(media_input_fifo_t media_input_fifo,
 /**
  * \brief Release the packet after consuming the samples within
  *
- * This is called by the talker thread when it has written all of the
+ * This is called by the talker task when it has written all of the
  * samples within a particular audio packet into 1722 AVBTP packets
  *
  * \param media_input_fifo  The fifo on which to release the packet
@@ -108,7 +108,7 @@ media_input_fifo_disable(media_input_fifo_t media_input_fifo);
  *
  *  This function intializes media input FIFOs and ties the handles
  *  to their associated data structures. It should be called before the main
- *  component function on a thread to setup the FIFOs.
+ *  component function on a task to setup the FIFOs.
  *
  *  \param ififos      an array of media input FIFO handles to initialize
  *  \param ififo_data  an array of associated data structures
@@ -143,7 +143,7 @@ void media_input_fifo_flush(media_input_fifo_t media_input_fifo);
 /**
  * \brief Enable a set of input fifos
  *
- * The talker threads use this to start the set of fifos which make up
+ * The talker tasks use this to start the set of fifos which make up
  * a stream.  Before doing this, they should make sure that the FIFOs
  * are not enabled already by checking the indicated fifo state using
  * media_input_fifo_enable_ind_state.
@@ -153,7 +153,7 @@ void media_input_fifo_enable_fifos(unsigned int enable);
 /**
  * \brief Disable a set of input fifos
  *
- * The talker threads use this to stop a set of fifos from being filled.
+ * The talker tasks use this to stop a set of fifos from being filled.
  *
  */
 void media_input_fifo_disable_fifos(unsigned int enable);
@@ -161,11 +161,11 @@ void media_input_fifo_disable_fifos(unsigned int enable);
 /**
  * \brief Get the enable state for a set of Fifos.
  *
- * The talker threads use this to determine the current enable state
+ * The talker tasks use this to determine the current enable state
  * of the fifos. After asking for the enable state of a set of fifos
  * to change, the talkers should not take any further action until
  * the enable state is reflected in this word, indicating that the
- * FIFO filling threads (I2S threads typically) has responded to the
+ * FIFO filling tasks (I2S tasks typically) has responded to the
  * request to start or stop filling the FIFO
  */
 unsigned int media_input_fifo_enable_ind_state();
@@ -173,7 +173,7 @@ unsigned int media_input_fifo_enable_ind_state();
 /**
  * \brief Check the requested enable state for the FIFOs
  *
- * The FIFO filling threads (I2S, TDM etc) threads can read the requested
+ * The FIFO filling tasks (I2S, TDM etc) can read the requested
  * enable state of the FIFOs and respond appropriately.  After they have
  * completed a sample input for each of the enabled channels, and emptied
  * the fifos for each of the non-active channels, then it should update
@@ -185,7 +185,7 @@ unsigned int media_input_fifo_enable_req_state();
 /**
  * \brief Update the FIFO enabled indication state
  *
- * The FIFO filling threads should indicate that they have acted upon the
+ * The FIFO filling tasks should indicate that they have acted upon the
  * fifo enabled request state by calling this function once they have
  * completed a pass of sample input.
  */
@@ -217,7 +217,7 @@ inline void media_input_fifo_set_ptr(media_input_fifo_t media_input_fifo0,
 /**
  * \brief Get the current sample pointer from the FIFO
  *
- * The talker thread stores a pointer to the current sample as discussed in
+ * The talker task stores a pointer to the current sample as discussed in
  * the media_input_fifo_set_ptr function description.
  *
  * \param media_input_fifo0 the fifo to read the pointer from
