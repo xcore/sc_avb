@@ -1,6 +1,10 @@
 sc_avb Change Log
 =================
 
+6.4.1
+-----
+  * Documentation tidy-up
+
 6.4.0
 -----
   * Adds support for MPEG-2 Transport Stream SPI interfaces and 61883-4 AVTP
