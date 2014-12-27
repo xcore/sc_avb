@@ -361,20 +361,24 @@ extends client interface avb_interface : {
     return 1;
   }
 
+  /** Get the stream id that an AVB source is using.
+   * \param source_num      the number of the source
+   * \param stream_id     int array containing the 64-bit ID of the stream
+   */
   static inline int get_source_id(client interface avb_interface i, unsigned source_num,
-                    unsigned int id[2])
+                    unsigned int stream_id[2])
   {
     if (source_num >= AVB_NUM_SOURCES)
       return 0;
     avb_source_info_t source;
     source = i._get_source_info(source_num);
-    memcpy(id, source.reservation.stream_id, 8);
+    memcpy(stream_id, source.reservation.stream_id, 8);
     return 1;
   }
 
   /** Get the stream id that an AVB sink listens to.
    * \param sink_num      the number of the sink
-   * \param stream_id     int array containing the 64-bit of the stream
+   * \param stream_id     int array containing the 64-bit ID of the stream
    */
   static inline int get_sink_id(client interface avb_interface i, unsigned sink_num,
                   unsigned int stream_id[2])

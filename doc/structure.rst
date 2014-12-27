@@ -55,6 +55,8 @@ every application:
    - IEEE 1722 MAAP - Multicast address allocation code.
  * - module_avb_audio
    - Code for media FIFOs and audio hardware interfaces (I2S/TDM etc).
+ * - module_avb_video
+   - Code for media FIFOs and video hardware interfaces (MPEG TS SPI).
  * - module_avb_media_clock
    - Media clock server code for clock recovery.
  * - module_avb_srp
