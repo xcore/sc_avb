@@ -54,6 +54,23 @@ static transaction adjust_stream(chanend c,
 	int cmd;
 	c :> cmd;
 	switch (cmd) {
+  case AVB1722_ADJUST_LISTENER_CHANNEL_MAP:
+  {
+    media_output_fifo_t new_map[AVB_MAX_CHANNELS_PER_LISTENER_STREAM];
+    int media_clock;
+    c :> media_clock;
+    for(int i=0;i<s.num_channels;i++) {
+      c :> new_map[i];
+      if (new_map[i] != s.map[i])
+      {
+        s.map[i] = new_map[i];
+        if (s.map[i]) {
+          enable_media_output_fifo(s.map[i], media_clock);
+        }
+      }
+    }
+    break;
+  }
 	case AVB1722_ADJUST_LISTENER_VOLUME:
 		{
 #ifdef MEDIA_OUTPUT_FIFO_VOLUME_CONTROL

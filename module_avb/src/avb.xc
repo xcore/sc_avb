@@ -184,6 +184,48 @@ static int valid_to_leave_vlan(int vlan)
   return all_streams_disabled;
 }
 
+static void configure_listener_stream(chanend c, avb_sink_info_t &sink, unsigned sink_num) {
+  debug_printf("Listener sink #%d chan map:\n", sink_num);
+  master {
+    c <: AVB1722_CONFIGURE_LISTENER_STREAM;
+    c <: (int)sink.stream.local_id;
+    c <: (int)sink.stream.sync;
+    c <: sink.stream.rate;
+    c <: (int)sink.stream.num_channels;
+
+    for (int i=0;i<sink.stream.num_channels;i++) {
+      if (sink.map[i] == AVB_CHANNEL_UNMAPPED) {
+        c <: 0;
+        debug_printf("  %d unmapped\n", i);
+      }
+      else {
+        c <: outputs[sink.map[i]].fifo;
+        debug_printf("  %d -> %x\n", i, sink.map[i]);
+      }
+    }
+  }
+}
+
+static void set_avb_sink_map(chanend c, avb_sink_info_t &sink, unsigned sink_num) {
+  debug_printf("Listener sink #%d chan map:\n", sink_num);
+  master {
+    c <: AVB1722_ADJUST_LISTENER_STREAM;
+    c <: (int)sink.stream.local_id;
+    c <: AVB1722_ADJUST_LISTENER_CHANNEL_MAP;
+    c <: (int)sink.stream.sync;
+    for (int i=0;i<sink.stream.num_channels;i++) {
+      if (sink.map[i] == AVB_CHANNEL_UNMAPPED) {
+        c <: 0;
+        debug_printf("  %d unmapped\n", i);
+      }
+      else {
+        c <: outputs[sink.map[i]].fifo;
+        debug_printf("  %d -> %x\n", i, sink.map[i]);
+      }
+    }
+  }
+}
+
 static void update_sink_state(unsigned sink_num,
                               enum avb_sink_state_t prev,
                               enum avb_sink_state_t state,
@@ -191,65 +233,51 @@ static void update_sink_state(unsigned sink_num,
                               client interface media_clock_if ?i_media_clock_ctl,
                               client interface srp_interface i_srp) {
   unsafe {
-    avb_sink_info_t *sink = &sinks[sink_num];
-    chanend *unsafe c = sink->listener_ctl;
+    avb_sink_info_t &sink = sinks[sink_num];
+    chanend *unsafe c = sink.listener_ctl;
     if (prev == AVB_SINK_STATE_DISABLED &&
         state == AVB_SINK_STATE_POTENTIAL) {
 
-      unsigned clk_ctl = outputs[sink->map[0]].clk_ctl;
-      debug_printf("Listener sink #%d chan map:\n", sink_num);
-      master {
-        *c <: AVB1722_CONFIGURE_LISTENER_STREAM;
-        *c <: (int)sink->stream.local_id;
-        *c <: (int)sink->stream.sync;
-        *c <: sink->stream.rate;
-        *c <: (int)sink->stream.num_channels;
-
-        for (int i=0;i<sink->stream.num_channels;i++) {
-          if (sink->map[i] == AVB_CHANNEL_UNMAPPED) {
-            *c <: 0;
-            debug_printf("  %d unmapped\n", i);
-          }
-          else {
-            *c <: outputs[sink->map[i]].fifo;
-            debug_printf("  %d -> %x\n", i, sink->map[i]);
-          }
-        }
-      }
+      configure_listener_stream(*c, sink, sink_num);
 
       if (!isnull(i_media_clock_ctl)) {
-          i_media_clock_ctl.register_clock(clk_ctl, sink->stream.sync);
+        unsigned clk_ctl = outputs[sink.map[0]].clk_ctl;
+        i_media_clock_ctl.register_clock(clk_ctl, sink.stream.sync);
       }
 
       int router_link;
-
       master {
         *c <: AVB1722_GET_ROUTER_LINK;
         *c :> router_link;
       }
 
       avb_1722_add_stream_mapping(c_mac_tx,
-                                  sink->reservation.stream_id,
+                                  sink.reservation.stream_id,
                                   router_link,
-                                  sink->stream.local_id);
+                                  sink.stream.local_id);
 
-      sink->reservation.vlan_id = i_srp.register_attach_request(sink->reservation.stream_id, sink->reservation.vlan_id);
+      sink.reservation.vlan_id = i_srp.register_attach_request(sink.reservation.stream_id, sink.reservation.vlan_id);
 
+    }
+    else if (prev == AVB_SINK_STATE_POTENTIAL &&
+             state == AVB_SINK_STATE_POTENTIAL) {
+      // We allow the stream map to be changed in the POTENTIAL state
+      set_avb_sink_map(*c, sink, sink_num);
     }
     else if (prev != AVB_SINK_STATE_DISABLED &&
             state == AVB_SINK_STATE_DISABLED) {
 
       master {
         *c <: AVB1722_DISABLE_LISTENER_STREAM;
-        *c <: (int)sink->stream.local_id;
+        *c <: (int)sink.stream.local_id;
       }
 
-      i_srp.deregister_attach_request(sink->reservation.stream_id);
+      i_srp.deregister_attach_request(sink.reservation.stream_id);
 
-      avb_1722_remove_stream_mapping(c_mac_tx, sink->reservation.stream_id);
+      avb_1722_remove_stream_mapping(c_mac_tx, sink.reservation.stream_id);
 
 #if MRP_NUM_PORTS == 1
-      int vid = sink->reservation.vlan_id;
+      int vid = sink.reservation.vlan_id;
       if (vid && valid_to_leave_vlan(vid)) {
         avb_leave_vlan(vid);
       }
@@ -274,6 +302,7 @@ static void update_source_state(unsigned source_num,
                                 chanend c_mac_tx,
                                 client interface media_clock_if ?i_media_clock_ctl,
                                 client interface srp_interface i_srp) {
+#if AVB_NUM_SOURCES > 0
   unsafe {
     char stream_string[] = "Talker stream";
     avb_source_info_t *source = &sources[source_num];
@@ -407,6 +436,7 @@ static void update_source_state(unsigned source_num,
 
     }
   }
+#endif
 }
 
 // Wrappers for interface calls from C
