@@ -51,10 +51,6 @@ unsafe void set_current_fields_in_descriptor(unsigned char *unsafe descriptor,
         stream = &source.stream;
       }
       avb_1722_1_set_stream_format_field(stream, stream_inout->current_format);
-      for(int i=0; i < 8; i++) {
-        debug_printf("%x:",stream_inout->current_format[i]);
-        debug_printf("\n");
-      }
       break;
     }
     case AEM_CONTROL_TYPE:
