@@ -13,6 +13,7 @@
 
 void avb_1722_1_aecp_aem_init(unsigned int serial_num);
 void avb_1722_1_aem_set_grandmaster_id(REFERENCE_PARAM(unsigned char, as_grandmaster_id));
+void avb_1722_1_set_stream_format_field(avb_stream_info_t *unsafe stream_info, unsigned char stream_format[8]);
 #ifdef __XC__
 extern "C" {
 #endif

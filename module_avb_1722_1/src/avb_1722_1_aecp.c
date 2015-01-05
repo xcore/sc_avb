@@ -13,15 +13,10 @@
 #include <xs1.h>
 #include <platform.h>
 #include "avb_util.h"
-
-#if AVB_1722_1_USE_AVC
-#include "avc_commands.h"
-#endif
-#if AVB_1722_1_AEM_ENABLED
+#include "avb_stream.h"
 #include "aem_descriptor_types.h"
 #include "aem_descriptors.h"
 #include "aem_descriptor_structs.h"
-#endif
 
 extern unsigned int avb_1722_1_buf[AVB_1722_1_PACKET_SIZE_WORDS];
 extern guid_t my_guid;
@@ -135,6 +130,33 @@ static void avb_1722_1_create_aecp_aem_response(unsigned char src_addr[6], unsig
   memcpy(aem, cmd_pkt->data.payload, command_data_len + 2);
 }
 
+static int sfc_from_sampling_rate(int rate)
+{
+  switch (rate)
+  {
+    case 32000: return 0;
+    case 44100: return 1;
+    case 48000: return 2;
+    case 88200: return 3;
+    case 96000: return 4;
+    case 176400: return 5;
+    case 192000: return 6;
+    default: return 0;
+  }
+}
+
+void avb_1722_1_set_stream_format_field(avb_stream_info_t *stream_info, unsigned char stream_format[8])
+{
+  stream_format[0] = 0x00;
+  stream_format[1] = 0xa0;
+  stream_format[2] = sfc_from_sampling_rate(stream_info->rate); // 10.3.2 in 61883-6
+  stream_format[3] = stream_info->num_channels; // dbs
+  stream_format[4] = 0x40; // b[0], nb[1], reserved[2:]
+  stream_format[5] = 0; // label_iec_60958_cnt
+  stream_format[6] = stream_info->num_channels; // label_mbla_cnt
+  stream_format[7] = 0; // label_midi_cnt[0:3], label_smptecnt[4:]
+}
+
 static void generate_object_name(char *object_name, int number) {
   char num_string[2];
   num_string[0] = (char)(number + 0x30);
@@ -142,7 +164,12 @@ static void generate_object_name(char *object_name, int number) {
   strcat(object_name, num_string);
 }
 
-static int create_aem_read_descriptor_response(unsigned int read_type, unsigned int read_id, unsigned char src_addr[6], avb_1722_1_aecp_packet_t *pkt)
+static int create_aem_read_descriptor_response(unsigned int read_type,
+                                               unsigned int read_id,
+                                               unsigned char src_addr[6],
+                                               avb_1722_1_aecp_packet_t *pkt,
+                                               CLIENT_INTERFACE(avb_interface, i_avb_api),
+                                               CLIENT_INTERFACE(avb_1722_1_control_callbacks, i_1722_1_entity))
 {
   int desc_size_bytes = 0, i = 0;
   unsigned char *descriptor = NULL;
@@ -323,6 +350,8 @@ static int create_aem_read_descriptor_response(unsigned int read_type, unsigned 
 
     memcpy(aem, pkt->data.payload, 6);
     if (found_descriptor < 2) memcpy(&(aem->command.read_descriptor_resp.descriptor), descriptor, desc_size_bytes+40);
+
+    set_current_fields_in_descriptor(aem->command.read_descriptor_resp.descriptor, desc_size_bytes, read_type, read_id, i_avb_api, i_1722_1_entity);
 
     return packet_size;
   }
@@ -620,7 +649,7 @@ static void process_avb_1722_1_aecp_aem_msg(avb_1722_1_aecp_packet_t *pkt,
         desc_read_type = ntoh_16(aem_msg->command.read_descriptor_cmd.descriptor_type);
         desc_read_id = ntoh_16(aem_msg->command.read_descriptor_cmd.descriptor_id);
 
-        num_tx_bytes = create_aem_read_descriptor_response(desc_read_type, desc_read_id, src_addr, pkt);
+        num_tx_bytes = create_aem_read_descriptor_response(desc_read_type, desc_read_id, src_addr, pkt, i_avb_api, i_1722_1_entity);
 
         if (num_tx_bytes < 64) num_tx_bytes = 64;
 
@@ -684,6 +713,13 @@ static void process_avb_1722_1_aecp_aem_msg(avb_1722_1_aecp_packet_t *pkt,
       case AECP_AEM_CMD_SET_CONTROL:
       {
         cd_len = process_aem_cmd_getset_control(pkt, &status, command_type, i_1722_1_entity) + sizeof(avb_1722_1_aem_getset_control_t) + AVB_1722_1_AECP_COMMAND_DATA_OFFSET;
+        break;
+      }
+      case AECP_AEM_CMD_GET_SIGNAL_SELECTOR:
+      case AECP_AEM_CMD_SET_SIGNAL_SELECTOR:
+      {
+        process_aem_cmd_getset_signal_selector(pkt, &status, command_type, i_1722_1_entity);
+        cd_len = sizeof(avb_1722_1_aem_getset_signal_selector_t);
         break;
       }
       case AECP_AEM_CMD_GET_COUNTERS:
