@@ -166,7 +166,7 @@ inline void i2s_master_upto_8(const clock mclk,
 #ifdef I2S_SYNTH_FROM
     for (int k=I2S_SYNTH_FROM;k<num_in>>1;k++) {
       sine_count[k] += sine_inc[k];
-      if (sine_count[k] > I2S_SINE_TABLE_SIZE * 256)
+      if (sine_count[k] >= I2S_SINE_TABLE_SIZE * 256)
         sine_count[k] -= I2S_SINE_TABLE_SIZE * 256;
     }
 #endif
