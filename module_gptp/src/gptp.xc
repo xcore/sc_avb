@@ -466,7 +466,10 @@ static void update_path_delay(ptp_timestamp &master_ingress_ts,
   delay = round_trip / 2;
 
   if (delay < 0) {
-    port_info.delay_info.valid = 0;
+#if DEBUG_PRINT_PDELAY_CLAMP
+    debug_printf("Clamp negative pdelay %d\n", delay);
+#endif
+    delay = 0;
     return;
   }
 

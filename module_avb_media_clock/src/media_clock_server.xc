@@ -243,7 +243,7 @@ static void manage_buffer(buf_info_t &b,
 
 static void update_media_clock_divide(media_clock_t &clk)
 {
-  unsigned int divWordLength = clk.wordLength * INTERNAL_CLOCK_DIVIDE/2;
+  unsigned long long divWordLength = (unsigned long long)clk.wordLength * INTERNAL_CLOCK_DIVIDE/2;
   clk.baseLength = divWordLength >> (WC_FRACTIONAL_BITS);
   clk.baseLengthRemainder = divWordLength & ((1 << WC_FRACTIONAL_BITS) - 1);
 }
@@ -366,7 +366,7 @@ void media_clock_server(server interface media_clock_if media_clock_ctl,
         if ((now - media_clocks[i].next_event) > media_clocks[i].baseLength) {
           static int count = 0;
           count++;
-          if (x==3)
+          if (count==3)
             printstrln("ERROR: failed to drive PLL freq signal in time");
         }
 #endif
