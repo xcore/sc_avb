@@ -24,6 +24,8 @@
 #define MRP_SEND_BUFFER_SIZE (500)
 #endif
 
+#define DISABLE_NOTE_11_APPLICANT_CLEANUP 0
+
 //! Lengths of the first values for each attribute type
 static int first_value_lengths[MRP_NUM_ATTRIBUTE_TYPES] = FIRST_VALUE_LENGTHS;
 
@@ -623,7 +625,9 @@ static void mrp_update_state(mrp_event e, mrp_attribute_state *st, int four_pack
           break;
         case MRP_QO:
           mrp_change_applicant_state(st, e, MRP_AO);
+#if !DISABLE_NOTE_11_APPLICANT_CLEANUP
           if (!st->here) st->remove_after_next_tx = 1;
+#endif
           break;
         case MRP_QP:
           mrp_change_applicant_state(st, e, MRP_AP);
@@ -645,7 +649,9 @@ static void mrp_update_state(mrp_event e, mrp_attribute_state *st, int four_pack
         case MRP_QO:
 #ifdef MRP_FULL_PARTICIPANT
           mrp_change_applicant_state(st, e, MRP_LO);
+#if !DISABLE_NOTE_11_APPLICANT_CLEANUP
           if (st->registrar_state == MRP_MT) st->remove_after_next_tx = 1;
+#endif
 #else
           mrp_change_applicant_state(st, e, MRP_VO);
 #endif
@@ -739,7 +745,9 @@ static void mrp_update_state(mrp_event e, mrp_attribute_state *st, int four_pack
         case MRP_AO:
         case MRP_QO:
           mrp_change_applicant_state(st, e, MRP_LO);
+#if !DISABLE_NOTE_11_APPLICANT_CLEANUP
           if (st->applicant_state != MRP_LA && !st->here) st->remove_after_next_tx = 1;
+#endif
           break;
         case MRP_VN:
           mrp_change_applicant_state(st, e, MRP_AN);
