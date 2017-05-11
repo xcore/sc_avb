@@ -1177,6 +1177,9 @@ void mrp_periodic(CLIENT_INTERFACE(avb_interface, avb))
         mrp_mad_join(&attrs[j], 1);
       }
       else if ((attrs[j].attribute_type == MSRP_TALKER_FAILED) &&
+#if CONVERT_FAILED_TO_ADVERTISE_ON_TALKER_ONLY
+                attrs[j].here &&
+#endif
                 !srp_domain_boundary_port[i] &&
                 reservation && reservation->failure_code == 8
               ) {
