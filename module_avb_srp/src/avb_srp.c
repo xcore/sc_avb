@@ -615,7 +615,7 @@ short avb_srp_create_and_join_talker_advertise_attrs(avb_srp_info_t *reservation
         mrp_attribute_state *listener_attr = mrp_get_attr();
         if (listener_attr) {
           mrp_attribute_init(listener_attr, MSRP_LISTENER, i,
-#if CONVERT_FAILED_TO_ADVERTISE_ON_TALKER_ONLY
+#if NO_DECLARE_OF_REMOTE_TALKER_ATTRIBUTES
             0,
 #else
             1,
@@ -746,7 +746,7 @@ short avb_srp_join_listener_attrs(unsigned int stream_id[2], short vlan_id) {
             mrp_attribute_init(talker_attr,
                                MSRP_TALKER_ADVERTISE,
                                i,
-#if CONVERT_FAILED_TO_ADVERTISE_ON_TALKER_ONLY
+#if NO_DECLARE_OF_REMOTE_TALKER_ATTRIBUTES
                                0,
 #else
                                1,

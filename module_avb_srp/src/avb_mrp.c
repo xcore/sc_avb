@@ -1182,12 +1182,18 @@ void mrp_periodic(CLIENT_INTERFACE(avb_interface, avb))
             }
           }
         }
+#if NO_DECLARE_OF_REMOTE_TALKER_ATTRIBUTES
+        if (attrs[j].here) {
+#endif
         mrp_mad_join(&attrs[j], 1);
+#if NO_DECLARE_OF_REMOTE_TALKER_ATTRIBUTES
+        }
+        else {
+          debug_printf("No MAD Join of converted remote Talker Failed (was Advertise)\n");
+        }
+#endif
       }
       else if ((attrs[j].attribute_type == MSRP_TALKER_FAILED) &&
-#if CONVERT_FAILED_TO_ADVERTISE_ON_TALKER_ONLY
-                attrs[j].here &&
-#endif
                 !srp_domain_boundary_port[i] &&
                 reservation && reservation->failure_code == 8
               ) {
@@ -1195,7 +1201,16 @@ void mrp_periodic(CLIENT_INTERFACE(avb_interface, avb))
         avb_stream_entry *stream_info = attrs[j].attribute_info;
         stream_info->talker_present = 1;
         debug_printf("Talker Failed -> Advertise for stream %x%x\n", reservation->stream_id[0], reservation->stream_id[1]);
+#if NO_DECLARE_OF_REMOTE_TALKER_ATTRIBUTES
+        if (attrs[j].here) {
+#endif
         mrp_mad_join(&attrs[j], 1);
+#if NO_DECLARE_OF_REMOTE_TALKER_ATTRIBUTES
+        }
+        else {
+          debug_printf("No MAD Join of converted remote Talker Advertise (was Failed)\n");
+        }
+#endif
       }
 
   #ifdef MRP_FULL_PARTICIPANT

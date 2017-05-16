@@ -14,7 +14,7 @@
 
 #define AVB_SRP_MACADDR { 0x01, 0x80, 0xc2, 0x00, 0x00, 0xe }
 
-#define CONVERT_FAILED_TO_ADVERTISE_ON_TALKER_ONLY 0
+#define NO_DECLARE_OF_REMOTE_TALKER_ATTRIBUTES 1
 
 typedef struct avb_stream_entry
 {
