@@ -77,15 +77,14 @@ static void srp_increase_port_bandwidth(int max_frame_size, int extra_byte, int 
   int stream_bandwidth_bps = srp_calculate_stream_bandwidth(max_frame_size, extra_byte);
   port_bandwidth[port] += stream_bandwidth_bps;
   debug_printf("Increasing port %d shaper bandwidth to %d bps\n", port, port_bandwidth[port]);
-  mac_set_qav_bandwidth(c_mac_tx, port, port_bandwidth[port]);
+  //mac_set_qav_bandwidth(c_mac_tx, port, port_bandwidth[port]);
 }
 
 static void srp_decrease_port_bandwidth(int max_frame_size, int extra_byte, int port) {
   int stream_bandwidth_bps = srp_calculate_stream_bandwidth(max_frame_size, extra_byte);
   port_bandwidth[port] -= stream_bandwidth_bps;
    debug_printf("Decreasing port %d shaper bandwidth to %d bps\n", port, port_bandwidth[port]);
-  if (port_bandwidth[port] < 0) __builtin_trap();
-  mac_set_qav_bandwidth(c_mac_tx, port, port_bandwidth[port]);
+  //mac_set_qav_bandwidth(c_mac_tx, port, port_bandwidth[port]);
 }
 
 int avb_srp_match_listener_to_talker_stream_id(unsigned stream_id[2], avb_srp_info_t **stream, int is_listener)
